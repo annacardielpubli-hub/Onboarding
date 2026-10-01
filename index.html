@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuéntanos de tu negocio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#2A21D9;--ink:#14123A;--paper:#fff;--mut:rgba(255,255,255,.72);--line:rgba(255,255,255,.35);--sun:#FFD84D;--err:#FFB4A8}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--paper);font:400 18px/1.5 "DM Sans",system-ui,sans-serif;overflow:hidden}
+#bar{position:fixed;top:0;left:0;height:6px;width:0;background:var(--sun);transition:width .4s ease}
+header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:22px 28px;font:800 20px "Bricolage Grotesque",system-ui,sans-serif}
+#cnt{font:500 15px "DM Sans",sans-serif;color:var(--mut)}
+#stage{height:100%;display:flex;overflow-y:auto;padding:84px 24px 96px}
+.q{width:100%;max-width:700px;margin:auto;animation:in .4s ease both}
+.q.back{animation-name:inb}
+@keyframes in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes inb{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:none}}
+.sec{color:var(--sun);font-weight:700;font-size:16px;margin-bottom:14px}
+.opt-tag{margin-left:12px;color:var(--mut);font-weight:400}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;line-height:1.12;margin:0 0 24px;letter-spacing:-.01em}
+h1{font-size:clamp(34px,6.4vw,60px)}
+h2{font-size:clamp(28px,5vw,44px)}
+.hint{color:var(--mut);font-size:17px;margin:-12px 0 24px;max-width:56ch}
+.hint:empty{display:none}
+.hint b{color:var(--paper);font-weight:700}
+.hint a{color:var(--sun)}
+input,textarea{width:100%;font:inherit;font-size:clamp(20px,3.2vw,28px);color:var(--paper);background:transparent;border:0;border-bottom:2px solid var(--line);padding:8px 0;outline:0;resize:none;transition:border-color .2s}
+input::placeholder,textarea::placeholder{color:rgba(255,255,255,.45)}
+input:focus,textarea:focus{border-color:var(--sun)}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;text-align:left;font:inherit;font-size:18px;color:var(--paper);background:rgba(255,255,255,.08);border:2px solid var(--line);border-radius:10px;padding:12px 16px;cursor:pointer;transition:background .15s,border-color .15s}
+.opt:hover{border-color:var(--paper)}
+.opt kbd{font:700 13px "DM Sans",sans-serif;min-width:26px;text-align:center;border:1.5px solid currentColor;border-radius:6px;padding:1px 0}
+.opt.on{background:var(--sun);border-color:var(--sun);color:var(--ink);font-weight:500}
+.opt:focus-visible,.btn:focus-visible,nav button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.row{display:flex;align-items:center;gap:16px;margin-top:28px;flex-wrap:wrap}
+.btn{font:700 17px "DM Sans",sans-serif;color:var(--ink);background:var(--sun);border:0;border-radius:10px;padding:13px 26px;cursor:pointer}
+.btn:hover{filter:brightness(.93)}
+.hk{color:var(--mut);font-size:15px}
+.err{color:var(--err);font-size:16px;margin-top:14px;min-height:1.4em}
+nav{position:fixed;right:24px;bottom:22px;display:flex;gap:8px}
+nav button{width:42px;height:42px;border:0;border-radius:10px;background:var(--paper);color:var(--bg);font-size:18px;cursor:pointer}
+nav button:disabled{opacity:.3;cursor:default}
+@media (prefers-reduced-motion:reduce){.q{animation:none}#bar{transition:none}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<header><span id="brand"></span><span id="cnt"></span></header>
+<main id="stage"></main>
+<nav><button id="prev" aria-label="Pregunta anterior" disabled>&#8593;</button><button id="next" aria-label="Pregunta siguiente" disabled>&#8595;</button></nav>
+<script>
+// Ajustes: cambia el nombre y, cuando lo tengas, la dirección donde recibir las respuestas
+const CONFIG={agency:"Tu agencia",endpoint:"",
+  // Datos para el aviso de privacidad: sustituye los textos entre corchetes
+  legal:{responsable:"[Nombre o razón social y NIF]",email:"[email de contacto]",politicaUrl:""}};
+const L=CONFIG.legal;
+
+const S=["Sobre ti","Tu negocio","Tus objetivos","Tu cliente ideal","Tu marca","Competencia y referentes","Tu situación digital","Cómo trabajaremos","Para terminar","Privacidad"];
+const R=[0,1,2,3,6,9]; // secciones con respuesta obligatoria
+// [sección, tipo (t texto, e email, l largo, c una opción, m varias), pregunta, ayuda, opciones]
+const Q=[
+[0,'t','¿Cómo te llamas?'],
+[0,'t','¿Cómo se llama tu empresa o proyecto?'],
+[0,'e','¿Cuál es tu email?','Lo usaremos para enviarte el resumen y los próximos pasos.'],
+[1,'l','¿A qué se dedica tu negocio?','Cuéntanoslo en dos frases, como se lo explicarías a un amigo.'],
+[1,'l','¿Cuál es tu producto o servicio estrella y cuál te gustaría vender más?'],
+[1,'c','¿Cuánto tiempo lleva en marcha tu negocio?','',['Menos de 1 año','Entre 1 y 3 años','Entre 3 y 10 años','Más de 10 años']],
+[1,'l','¿Qué te diferencia de tu competencia?','¿Por qué te eligen a ti?'],
+[2,'l','¿Qué quieres conseguir con nosotros en 3, 6 y 12 meses?'],
+[2,'m','¿Cómo mides hoy el éxito?','Elige todo lo que aplique.',['Ventas','Leads o contactos','Seguidores y comunidad','Reservas o citas','Notoriedad de marca','Todavía no lo mido']],
+[2,'l','¿Qué resultado concreto te haría pensar "esto ha valido la pena"?'],
+[2,'l','¿Qué has probado antes en comunicación o marketing?','Lo que funcionó y lo que no.'],
+[3,'l','¿Quién es tu cliente ideal?','Edad, ubicación, intereses, situación.'],
+[3,'l','¿Qué problema o necesidad le resuelves?'],
+[3,'l','¿Qué le frena a la hora de comprarte?','Dudas, objeciones, precio.'],
+[3,'l','¿Dónde pasa el tiempo online y cómo llega hoy hasta ti?'],
+[4,'t','Describe la personalidad de tu marca en tres palabras'],
+[4,'l','¿Cómo quieres que te perciba la gente y cómo crees que te perciben hoy?'],
+[4,'l','¿Hay temas, tonos o formatos que quieras evitar?'],
+[4,'c','¿Tienes manual de marca, logo y materiales como fotos o vídeos?','',['Sí, tengo todo','Tengo algo, pero incompleto','No, partimos de cero']],
+[4,'l','¿Quién da la cara de tu marca?','¿Hay personas del equipo o fundadores dispuestos a aparecer en el contenido?'],
+[5,'l','¿Quiénes son tus 3 principales competidores?'],
+[5,'l','¿Qué marcas admiras por cómo comunican, y por qué?','Pueden ser de tu sector o de cualquier otro.'],
+[6,'m','¿En qué canales estás activo hoy?','Elige todos los que uses.',['Web','Instagram','TikTok','YouTube','LinkedIn','Facebook','Newsletter','Google Business','Ninguno todavía']],
+[6,'c','¿Tienes configurada la analítica (Google Analytics, Meta Business, píxeles)?','',['Sí, y la revisamos','Sí, pero no la revisamos','No, o no lo sé']],
+[6,'c','¿Estás abierto a invertir en Meta Ads para que el contenido que creemos salga anunciado en redes?','',['Sí, y ya sé cuánto quiero invertir','Sí, pero aún no sé cuánto invertir','No, solo quiero contenido orgánico (no anunciado)']],
+[7,'t','¿Quién será nuestra persona de contacto y quién aprueba los contenidos?'],
+[7,'m','¿Cómo prefieres que nos comuniquemos?','Elige las que quieras.',['Email','WhatsApp','Llamada','Reuniones periódicas presenciales']],
+[7,'c','¿Qué nivel de implicación quieres tener en el proceso creativo?','Alto: opinas en cada paso. Bajo: confías en nosotros y revisas el resultado.',['Alto','Medio','Bajo']],
+[7,'l','¿Tienes fechas clave, lanzamientos o campañas ya previstas?'],
+[8,'l','¿Hay algo que te preocupe de empezar a trabajar con nosotros?'],
+[8,'l','¿Algo más que debamos saber para hacerlo bien desde el primer día?'],
+[9,'m','Antes de enviar, tu privacidad',
+`<b>Responsable:</b> ${L.responsable} (${L.email}).<br><b>Finalidad:</b> gestionar tu solicitud, conocer tu negocio y preparar nuestra propuesta y la relación contigo como cliente.<br><b>Legitimación:</b> tu consentimiento y, si contratas nuestros servicios, la ejecución del contrato.<br><b>Destinatarios:</b> no cedemos tus datos a terceros salvo obligación legal. Usamos proveedores tecnológicos que los tratan por nuestra cuenta (por ejemplo, Google y nuestro CRM).<br><b>Derechos:</b> puedes acceder, rectificar, suprimir, oponerte, limitar el tratamiento y pedir la portabilidad escribiendo a ${L.email}. También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).${L.politicaUrl?`<br><a href="${L.politicaUrl}" target="_blank" rel="noopener">Leer la política de privacidad completa</a>`:''}`,
+['He leído la información sobre privacidad y acepto el tratamiento de mis datos']]
+].map(([s,t,q,h,o])=>({s,t,q,h,o}));
+
+const N=Q.length,A={};let i=-1,T;
+const $=s=>document.querySelector(s),st=$('#stage');
+const wrap=(c,b)=>`<div class="q${b?' back':''}">${c}</div>`;
+$('#brand').textContent=CONFIG.agency;
+
+function go(n,b){
+  clearTimeout(T);i=n;
+  $('#bar').style.width=Math.max(n,0)/N*100+'%';
+  $('#cnt').textContent=n>=0&&n<N?`${n+1} / ${N}`:'';
+  $('#prev').disabled=$('#next').disabled=n<0||n>=N;
+  if(n<0){
+    st.innerHTML=wrap(`<h1>Cuéntanos de tu negocio</h1><p class="hint">Son ${N-1} preguntas cortas y te llevará unos 10 minutos. Con tus respuestas preparamos la estrategia desde el primer día.</p><div class="row"><button class="btn" id="ok">Empezar</button><span class="hk">Pulsa Enter</span></div>`,b);
+    $('#ok').onclick=next;return;
+  }
+  if(n>=N){
+    st.innerHTML=wrap(`<h1>Ya estás un paso más cerca de escalar el negocio con el que sueñas</h1><p class="hint">Hemos recibido tus respuestas. Nos pondremos en contacto contigo para agendar la reunión de arranque y empezar a construirlo juntos.</p>${CONFIG.endpoint?'':'<p class="hint">Modo de prueba: las respuestas aún no se envían a ningún sitio.</p>'}`);
+    return;
+  }
+  const x=Q[n],v=A[n],on=o=>x.t=='m'?(v||[]).includes(o):v===o;
+  const f=x.o
+    ?`<div class="opts">${x.o.map((o,k)=>`<button class="opt${on(o)?' on':''}" data-k="${k}"><kbd>${'ABCDEFGHI'[k]}</kbd>${o}</button>`).join('')}</div>`
+    :x.t=='l'?'<textarea rows="2" placeholder="Escribe aquí"></textarea>'
+    :`<input type="${x.t=='e'?'email':'text'}" placeholder="Escribe aquí" autocomplete="off">`;
+  const hk=x.s==9?'Marca esta casilla para poder enviar':x.t=='c'?'Elige una opción':x.t=='m'?'Elige las que quieras':x.t=='l'?'Shift + Enter para un salto de línea':'Pulsa Enter';
+  st.innerHTML=wrap(`<div class="sec">${S[x.s]}${R.includes(x.s)?'':'<span class="opt-tag">Opcional</span>'}</div><h2>${x.q}</h2><p class="hint">${x.h||''}</p>${f}<div class="err" role="alert"></div><div class="row"><button class="btn" id="ok">${n==N-1?'Enviar respuestas':'Siguiente'}</button><span class="hk">${hk}</span></div>`,b);
+  $('#ok').onclick=next;
+  st.querySelectorAll('.opt').forEach(b=>b.onclick=()=>pick(+b.dataset.k));
+  const el=st.querySelector('input,textarea');
+  if(el){
+    el.value=v||'';
+    el.oninput=()=>{A[n]=el.value;if(el.tagName=='TEXTAREA'){el.style.height='auto';el.style.height=el.scrollHeight+'px'}};
+    el.focus({preventScroll:true});
+    if(el.tagName=='TEXTAREA')el.oninput();
+  }
+}
+
+function pick(k){
+  const x=Q[i],o=x.o[k];
+  if(x.t=='m'){const a=A[i]=A[i]||[],j=a.indexOf(o);j<0?a.push(o):a.splice(j,1)}else A[i]=o;
+  st.querySelectorAll('.opt').forEach((b,j)=>b.classList.toggle('on',x.t=='m'?A[i].includes(x.o[j]):A[i]===x.o[j]));
+  if(document.activeElement)document.activeElement.blur();
+  if(x.t=='c')T=setTimeout(next,350);
+}
+
+function next(){
+  if(i<0)return go(0);
+  const x=Q[i],v=A[i],e=$('.err');
+  const empty=!v||!v.length||(typeof v=='string'&&!v.trim());
+  if(R.includes(x.s)&&empty){e.textContent=x.s==9?'Necesitamos tu consentimiento para poder enviar tus respuestas.':'Esta pregunta es obligatoria.';return}
+  if(x.t=='e'&&!/^\S+@\S+\.\S+$/.test(v||'')){e.textContent='Revisa el email: parece que le falta algo.';return}
+  i+1<N?go(i+1):send();
+}
+
+async function send(){
+  st.innerHTML=wrap('<h2>Enviando tus respuestas…</h2>');
+  const p={agencia:CONFIG.agency,fecha:new Date().toISOString(),respuestas:Q.map((x,k)=>({seccion:S[x.s],pregunta:x.q,respuesta:Array.isArray(A[k])?A[k].join(', '):(A[k]||'')}))};
+  try{
+    if(CONFIG.endpoint)await fetch(CONFIG.endpoint,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(p)});
+    else console.log(p);
+    go(N);
+  }catch(err){
+    st.innerHTML=wrap('<h2>No hemos podido enviar tus respuestas</h2><p class="hint">Sigue aquí tu información. Comprueba tu conexión e inténtalo de nuevo.</p><div class="row"><button class="btn" id="retry">Reintentar</button></div>');
+    $('#retry').onclick=send;
+  }
+}
+
+$('#prev').onclick=()=>i>=0&&go(i-1,1);
+$('#next').onclick=next;
+document.addEventListener('keydown',e=>{
+  const t=e.target.tagName;
+  if(e.key=='Enter'&&t!='BUTTON'&&!(e.shiftKey&&t=='TEXTAREA')){e.preventDefault();if(i<N)next()}
+  else if(i>=0&&i<N&&Q[i].o&&t!='INPUT'&&t!='TEXTAREA'&&!e.ctrlKey&&!e.metaKey&&e.key.length==1){
+    const k='abcdefghi'.indexOf(e.key.toLowerCase());
+    if(k>=0&&k<Q[i].o.length)pick(k);
+  }
+});
+go(-1);
+</script>
+</body>
+</html>
