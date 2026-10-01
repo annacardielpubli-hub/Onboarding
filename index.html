@@ -58,7 +58,7 @@ nav button:disabled{opacity:.3;cursor:default}
 // Ajustes: cambia el nombre y, cuando lo tengas, la dirección donde recibir las respuestas
 const CONFIG={agency:"Tu agencia",endpoint:"",
   // Datos para el aviso de privacidad: sustituye los textos entre corchetes
-  legal:{responsable:"[Nombre o razón social y NIF]",email:"[email de contacto]",politicaUrl:""}};
+  legal:{responsable:"[Anna Cardiel 73217357P]",email:"[annacardielpubli@gmail.com]",politicaUrl:""}};
 const L=CONFIG.legal;
 
 const S=["Sobre ti","Tu negocio","Tus objetivos","Tu cliente ideal","Tu marca","Competencia y referentes","Tu situación digital","Cómo trabajaremos","Para terminar","Privacidad"];
@@ -116,7 +116,7 @@ function go(n,b){
     $('#ok').onclick=next;return;
   }
   if(n>=N){
-    st.innerHTML=wrap(`<h1>Ya estás un paso más cerca de escalar el negocio con el que sueñas</h1><p class="hint">Hemos recibido tus respuestas. Nos pondremos en contacto contigo para agendar la reunión de arranque y empezar a construirlo juntos.</p>${CONFIG.endpoint?'':'<p class="hint">Modo de prueba: las respuestas aún no se envían a ningún sitio.</p>'}`);
+    st.innerHTML=wrap(`<h1>Ya estás un paso más cerca de escalar el negocio con el que sueñas</h1><p class="hint">Hemos recibido tus respuestas. Nos pondremos en contacto contigo para agendar la reunión de arranque y empezar a construirlo juntos.</p>${CONFIG.endpoint?'https://script.google.com/macros/s/AKfycbwDm98fdzN5u2DgMO3vRFKzQFyNSWzBdzkK3o4l0r0R3GJMe8LpsabBEmkLiz7IW9ffNA/exec':'<p class="hint">Modo de prueba: las respuestas aún no se envían a ningún sitio.</p>'}`);
     return;
   }
   const x=Q[n],v=A[n],on=o=>x.t=='m'?(v||[]).includes(o):v===o;
