@@ -181,7 +181,7 @@ function countUp(el,to){
 }
 
 function welcome(b){
-  st.innerHTML=wrap(`${art('welcome','👋')}<h1>15 minutos que te ahorrarán hasta <span class="hrs" id="hrs">0</span> horas cada mes</h1><p class="hint">Son ${N-1} preguntas en ${P.length} fases cortas. Contesta con calma: con tus respuestas nos encargamos de la estrategia, el contenido y la publicación.</p><p class="hint">Puedes volver atrás cuando quieras con el botón Atrás. Tu progreso se guarda en este dispositivo: si te interrumpen, abre de nuevo este enlace y sigue donde lo dejaste.</p><div class="row"><button class="btn" id="ok">${saved?'Continuar donde lo dejé':'Empezar'}</button>${saved?'<button class="ghost" id="fresh">Empezar de nuevo</button>':''}</div><p class="fine">Estimación basada en el tiempo que los pequeños empresarios dedican a gestionar sus redes (entre 12 y 40 horas al mes).</p>`,b);
+  st.innerHTML=wrap(`${art('welcome','👋')}<h1>15 minutos que te ahorrarán hasta <span class="hrs" id="hrs">0</span> horas cada mes</h1><p class="hint">Son ${N-1} preguntas en ${P.length} fases cortas. Contesta con calma: con tus respuestas nos encargamos de la estrategia, el contenido y la publicación.</p><p class="hint">Puedes volver atrás cuando quieras con el botón Atrás. Tu progreso se guarda en este dispositivo: si te interrumpen, abre de nuevo este enlace y sigue donde lo dejaste.</p><div class="row"><button class="btn" id="ok">${saved?'Continuar donde lo dejé':'Empezar'}</button>${saved?'<button class="ghost" id="fresh">Empezar de nuevo</button>',b);
   $('#ok').onclick=next;
   countUp($('#hrs'),HORAS_AHORRADAS);
   if(saved)$('#fresh').onclick=()=>{saved=null;A={};O={};try{localStorage.removeItem(KEY)}catch(e){}go(0)};
